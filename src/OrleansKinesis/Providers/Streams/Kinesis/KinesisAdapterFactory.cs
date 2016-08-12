@@ -60,7 +60,7 @@ namespace Orleans.Kinesis.Providers
         /// <summary>
         /// Creates a failure handler for a shard.
         /// </summary>
-        protected Func<Shard, Task<IStreamFailureHandler>> StreamFailureHandlerFactory { get; set; }
+        protected Func<string, Task<IStreamFailureHandler>> StreamFailureHandlerFactory { get; set; }
         /// <summary>
         /// Create a queue mapper to map Kinesis shards to queues
         /// </summary>
@@ -160,7 +160,7 @@ namespace Orleans.Kinesis.Providers
         /// <returns></returns>
         public Task<IStreamFailureHandler> GetDeliveryFailureHandler(QueueId queueId)
         {
-            return StreamFailureHandlerFactory(streamQueueMapper.QueueToShard(queueId));
+            return StreamFailureHandlerFactory(streamQueueMapper.QueueToShard(queueId).ShardId);
         }
 
         /// <summary>
