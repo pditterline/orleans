@@ -67,7 +67,7 @@ namespace Orleans.Kinesis.Providers
             this.logger = logger.GetSubLogger("-receiver");
             config = partitionConfig;
 
-            client = new AmazonKinesisClient();
+            client = config.Hub.KinesisConfig != null ? new AmazonKinesisClient(config.Hub.KinesisConfig) : new AmazonKinesisClient();
 
             hubReceiveTimeMetric = $"Orleans.Kinesis.ReceiveTime_{config.Hub.StreamName}";
             partitionReceiveTimeMetric = $"Orleans.Kinesis.ReceiveTime_{config.Hub.StreamName}-{config.Shard}";
@@ -234,7 +234,7 @@ namespace Orleans.Kinesis.Providers
             };
 
 
-            //KinesisClient client = KinesisClient.CreateFromConnectionString(partitionConfig.Hub.ConnectionString, partitionConfig.Hub.StreamName);
+            //KinesisClient client = KinesisClient.CreateFromConnectionString(partitionConfig.Hub.KinesisConfig, partitionConfig.Hub.StreamName);
             //KinesisConsumerGroup consumerGroup = client.GetConsumerGroup(partitionConfig.Hub.ConsumerGroup);
             //// if we have a starting offset or if we're not configured to start reading from utc now, read from offset
             if (!partitionConfig.Hub.StartFromNow || offset != string.Empty)

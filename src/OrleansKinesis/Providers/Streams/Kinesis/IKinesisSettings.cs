@@ -1,11 +1,12 @@
 ﻿
 
+using Amazon.Kinesis;
+
 namespace Orleans.Kinesis.Providers
 {
     public interface IKinesisSettings
     {
-        string ConnectionString { get; }
-        string ConsumerGroup { get; }
+        AmazonKinesisConfig KinesisConfig { get; }
         string StreamName { get; }
         
         /// <summary>

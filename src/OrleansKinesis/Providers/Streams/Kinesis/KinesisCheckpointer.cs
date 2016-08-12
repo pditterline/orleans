@@ -22,7 +22,7 @@ namespace Orleans.Kinesis.Providers
         private Task inProgressSave;
         private DateTime? throttleSavesUntilUtc;
 
-        public bool CheckpointExists { get { return entity != null && entity.Offset != KinesisPartitionCheckpointEntity.ITERATOR_TYPE_TRIM_HORIZON; } }
+        public bool CheckpointExists => entity != null && entity.Offset != KinesisPartitionCheckpointEntity.ITERATOR_TYPE_TRIM_HORIZON;
 
         public static async Task<IStreamQueueCheckpointer<string>> Create(ICheckpointerSettings settings, string streamProviderName, Shard shard)
         {
@@ -81,9 +81,8 @@ namespace Orleans.Kinesis.Providers
 
         public async Task<string> Load()
         {
-            var results =
-                await
-                    dataManager.GetItemAsync(_settings.TableName,
+            var results = 
+                await dataManager.GetItemAsync(_settings.TableName,
                         new Dictionary<string, AttributeValue>
                         {
                             {"PartitionKey", new AttributeValue(entity.PartitionKey)},
@@ -138,11 +137,11 @@ namespace Orleans.Kinesis.Providers
                 Key = new Dictionary<string, AttributeValue>()
                 {
                   { "PartitionKey", new AttributeValue { S = entity.PartitionKey } },
-                  {"RowKey", new AttributeValue {S = entity.RowKey} },
+                  { "RowKey", new AttributeValue { S = entity.RowKey} },
                 },
                 AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
                 {
-                    { "Offset", new AttributeValueUpdate(new AttributeValue {S = entity.Offset}, AttributeAction.PUT ) },
+                    { "Offset", new AttributeValueUpdate(new AttributeValue { S = entity.Offset}, AttributeAction.PUT ) },
                 },
                 TableName = tableName
             };

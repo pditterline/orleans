@@ -90,7 +90,7 @@ namespace Orleans.Kinesis.Providers
             adapterConfig.PopulateFromProviderConfig(providerConfig);
             kinesisSettings = adapterConfig.GetKinesisSettings(providerConfig, serviceProvider);
             
-            client = new AmazonKinesisClient(); // KinesisClient.CreateFromConnectionString(kinesisSettings.ConnectionString, kinesisSettings.StreamName);
+            client = new AmazonKinesisClient(); // KinesisClient.CreateFromConnectionString(kinesisSettings.KinesisConfig, kinesisSettings.StreamName);
             
 
 
