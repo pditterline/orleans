@@ -216,10 +216,6 @@
       <Project>{b9196cb5-d356-4228-b73f-143f2eb80c64}</Project>
       <Name>OrleansGoogleUtils</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\OrleansKinesis\OrleansKinesis.csproj">
-      <Project>{f127781a-0d40-4083-9dd8-9f78bf89f92b}</Project>
-      <Name>OrleansKinesis</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\OrleansManager\OrleansManager.csproj">
       <Project>{60498b15-9700-4623-bda0-365238f2c1ad}</Project>
       <Name>OrleansManager</Name>

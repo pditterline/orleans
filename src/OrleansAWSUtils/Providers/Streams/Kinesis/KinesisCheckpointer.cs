@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon.Kinesis.Model;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Orleans.Streams;
 using Orleans.Storage;
 using OrleansAWSUtils.Storage;
+using ResourceNotFoundException = Amazon.Kinesis.Model.ResourceNotFoundException;
+using Shard = Amazon.Kinesis.Model.Shard;
 
 namespace Orleans.Kinesis.Providers
 {
@@ -15,9 +18,8 @@ namespace Orleans.Kinesis.Providers
     public class KinesisCheckpointer : IStreamQueueCheckpointer<string>
     {
         private readonly ICheckpointerSettings _settings;
-        
-        private readonly TimeSpan persistInterval;
-        private DynamoDBStorage _storage;
+        private readonly DynamoDBStorage _storage;
+        private readonly TimeSpan persistInterval;        
         private KinesisPartitionCheckpointEntity entity;
         private Task inProgressSave;
         private DateTime? throttleSavesUntilUtc;
@@ -45,8 +47,9 @@ namespace Orleans.Kinesis.Providers
             if (shard == null)
             {
                 throw new ArgumentNullException("shard");
-            }
-            _provider = new DynamoDBStorageProvider();
+            }            
+
+            _storage = new DynamoDBStorage(settings.DataConnectionString);
 
             persistInterval = settings.PersistInterval;
             
@@ -56,44 +59,30 @@ namespace Orleans.Kinesis.Providers
 
         private async Task Initialize()
         {
-            try
-            {
-                
-                var table =  await dataManager.DescribeTableAsync(_settings.TableName);
-                if (table == null)
-                {
-                    await CreateTable();
-                }
-            }
-            catch (ResourceNotFoundException)
-            {
-                await CreateTable();
-            }
-        }
-
-        private Task CreateTable()
-        {
-            return dataManager.CreateTableAsync(new CreateTableRequest(_settings.TableName,
-                        new List<KeySchemaElement>
-                        {
-                            new KeySchemaElement("PartitionKey", KeyType.HASH),
-                            new KeySchemaElement("RowKey", KeyType.RANGE)
-                        }));
+            await
+                _storage.InitializeTable(_settings.TableName,
+                    new List<KeySchemaElement>
+                    {
+                        new KeySchemaElement("PatitionKey", KeyType.HASH),
+                        new KeySchemaElement("RowKey", KeyType.RANGE)
+                    },
+                    null
+                    );
         }
 
         public async Task<string> Load()
         {
-            var results = 
-                await dataManager.GetItemAsync(_settings.TableName,
+            var result = await _storage.ReadSingleEntryAsync(_settings.TableName,
                         new Dictionary<string, AttributeValue>
                         {
                             {"PartitionKey", new AttributeValue(entity.PartitionKey)},
                             {"RowKey", new AttributeValue(entity.RowKey)}
-                        });
-
-            if (results != null)
+                        },
+                        item => item.ToCheckpointEntity()
+                        );
+            if (result != null)
             {
-                entity = results.Item.ToCheckpointEntity();
+                entity = result;
             }
             return entity.Offset;
         }
@@ -114,7 +103,17 @@ namespace Orleans.Kinesis.Providers
 
             entity.Offset = offset;
             throttleSavesUntilUtc = utcNow + persistInterval;
-            inProgressSave = dataManager.UpdateItemAsync(entity.ToUpdateRequest(_settings.TableName));
+            inProgressSave = _storage.UpsertEntryAsync(
+                _settings.TableName,
+                new Dictionary<string, AttributeValue>()
+                {
+                    {"PartitionKey", new AttributeValue {S = entity.PartitionKey}},
+                    {"RowKey", new AttributeValue {S = entity.RowKey}},
+                },
+                new Dictionary<string, AttributeValue>()
+                {
+                    {"Offset", new AttributeValue(entity.Offset) }
+                });
             inProgressSave.Ignore();
         }
     }
@@ -129,23 +128,6 @@ namespace Orleans.Kinesis.Providers
                 Offset = entityData["Offset"].S,
                 PartitionKey = entityData["PartitionKey"].S,
                 RowKey = entityData["RowKey"].S,
-            };
-        }
-
-        public static UpdateItemRequest ToUpdateRequest(this KinesisPartitionCheckpointEntity entity, string tableName)
-        {
-            return new UpdateItemRequest
-            {
-                Key = new Dictionary<string, AttributeValue>()
-                {
-                  { "PartitionKey", new AttributeValue { S = entity.PartitionKey } },
-                  { "RowKey", new AttributeValue { S = entity.RowKey} },
-                },
-                AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
-                {
-                    { "Offset", new AttributeValueUpdate(new AttributeValue { S = entity.Offset}, AttributeAction.PUT ) },
-                },
-                TableName = tableName
             };
         }
     }
