@@ -2,7 +2,7 @@
 using System;
 using Orleans.Runtime;
 
-namespace Orleans.Kinesis
+namespace OrleansAWSUtils
 {
     /// <summary>
     /// Orleans Kinesis error codes
