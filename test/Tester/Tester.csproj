@@ -120,6 +120,10 @@
     <Compile Include="StreamingTests\DeactivationTestRunner.cs" />
     <Compile Include="StreamingTests\EHSubscriptionMultiplicityTests.cs" />
     <Compile Include="StreamingTests\GeneratedStreamRecoveryTests.cs" />
+    <Compile Include="StreamingTests\KinesisClientStreamTests.cs" />
+    <Compile Include="StreamingTests\KinesisImplicitSubscriptionStreamRecoveryTests.cs" />
+    <Compile Include="StreamingTests\KinesisStreamPerPartitionTests.cs" />
+    <Compile Include="StreamingTests\KinesisStreamProviderCheckpointTests.cs" />
     <Compile Include="StreamingTests\PullingAgentManagementTests.cs" />
     <Compile Include="StreamingTests\DelayedQueueRebalancingTests.cs" />
     <Compile Include="StreamingTests\ImplicitSubscritionRecoverableStreamTestRunner.cs" />
@@ -139,6 +143,7 @@
     <Compile Include="TestStreamProviders\Kinesis\StreamPerPartitionKinesisStreamProvider.cs" />
     <Compile Include="TestStreamProviders\Kinesis\TestKinesisStreamProvider.cs" />
     <Compile Include="TestStreamProviders\TestAzureTableStorageStreamFailureHandler.cs" />
+    <Compile Include="TestStreamProviders\TestDynamoDbStorageStreamFailureHandler.cs" />
     <Compile Include="TestUtils.cs" />
   </ItemGroup>
   <ItemGroup>
