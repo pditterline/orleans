@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using Orleans.AzureUtils;
-using Orleans.Providers.Streams.PersistentStreams;
 using Orleans.Streams;
 using Orleans.TestingHost;
+using OrleansAWSUtils.Providers.Streams.PersistentStreams;
 
 namespace Tester.TestStreamProviders
 {

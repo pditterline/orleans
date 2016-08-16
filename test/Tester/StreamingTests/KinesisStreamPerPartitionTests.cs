@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Kinesis;
+using Amazon.Kinesis.Model;
 using Microsoft.WindowsAzure.Storage.Table;
 using Orleans;
 using Orleans.AzureUtils;
@@ -12,6 +16,7 @@ using Orleans.ServiceBus.Providers;
 using Orleans.Streams;
 using Orleans.TestingHost;
 using Orleans.TestingHost.Utils;
+using OrleansAWSUtils.Storage;
 using Tester;
 using Tester.TestStreamProviders.EventHub;
 using Tester.TestStreamProviders.Kinesis;
@@ -29,7 +34,7 @@ namespace UnitTests.StreamingTests
         private static readonly string CheckpointNamespace = Guid.NewGuid().ToString();
 
 
-        private static readonly KinesisSettings EventHubConfig = new KinesisSettings(StorageTestConstants.KinesisConnectionString, KinesisStream);
+        private static readonly KinesisSettings KinesisConfig = new KinesisSettings(StorageTestConstants.KinesisConnectionString, KinesisStream);
 
         private static readonly EventHubStreamProviderConfig ProviderConfig =
             new EventHubStreamProviderConfig(StreamProviderName);
@@ -46,15 +51,37 @@ namespace UnitTests.StreamingTests
                 options.ClusterConfiguration.AddMemoryStorageProvider("PubSubStore");
                 options.ClusterConfiguration.Globals.RegisterStreamProvider<StreamPerPartitionKinesisStreamProvider>(StreamProviderName, BuildProviderSettings());
                 options.ClientConfiguration.RegisterStreamProvider<KinesisStreamProvider>(StreamProviderName, BuildProviderSettings());
+
+                // While we're building the cluster we should create the stream... not sure where else I can set up the stream in the Kinesis client so far... in production the stream would already exist... for test we need to create and destroy.
+                var kinesisClient = new AmazonKinesisClient(KinesisConfig.KinesisConfig);
+                kinesisClient.CreateStreamAsync(new CreateStreamRequest
+                {
+                    ShardCount = 2,
+                    StreamName = KinesisStream,
+                }).Wait();
+
                 return new TestCluster(options);
             }
 
             public override void Dispose()
             {
                 base.Dispose();
-                var dataManager = new AzureTableDataManager<TableEntity>(CheckpointerSettings.TableName, CheckpointerSettings.DataConnectionString);
-                dataManager.InitTableAsync().Wait();
-                dataManager.ClearTableAsync().Wait();
+                var dataManager = new DynamoDBStorage(CheckpointerSettings.DataConnectionString); // new AzureTableDataManager<TableEntity>(CheckpointerSettings.TableName, CheckpointerSettings.DataConnectionString);
+                dataManager.InitializeTable(CheckpointerSettings.TableName, new List<KeySchemaElement>
+                {
+                    new KeySchemaElement("PartitionKey", KeyType.HASH),
+                    new KeySchemaElement("RowKey", KeyType.RANGE)
+                },
+                null).Wait();
+
+                var kinesisClient = new AmazonKinesisClient(KinesisConfig.KinesisConfig);
+                kinesisClient.DeleteStreamAsync(new DeleteStreamRequest
+                {
+                    StreamName = KinesisStream,
+                }).Wait();
+
+
+                dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
             }
 
             private static Dictionary<string, string> BuildProviderSettings()
@@ -63,7 +90,7 @@ namespace UnitTests.StreamingTests
 
                 // get initial settings from configs
                 ProviderConfig.WriteProperties(settings);
-                EventHubConfig.WriteProperties(settings);
+                KinesisConfig.WriteProperties(settings);
                 CheckpointerSettings.WriteProperties(settings);
 
                 // add queue balancer setting

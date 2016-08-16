@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,6 +66,8 @@
     <Compile Include="Providers\Streams\Kinesis\KinesisStreamProviderConfig.cs" />
     <Compile Include="Providers\Streams\Kinesis\RecordExtensions.cs" />
     <Compile Include="Providers\Streams\Kinesis\SegmentBuilder.cs" />
+    <Compile Include="Providers\Streams\PersistentStreams\DynamoDbStorageStreamFailureHandler.cs" />
+    <Compile Include="Providers\Streams\PersistentStreams\StreamDeliveryFailureEntity.cs" />
     <Compile Include="Storage\DynamoDBStorage.cs" />
     <Compile Include="Storage\Provider\DynamoDBStorageProvider.cs" />
   </ItemGroup>

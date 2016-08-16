@@ -27,6 +27,7 @@ namespace Orleans.TestingHost
         {
             public string DataConnectionString { get; set; }
             public string EventHubConnectionString { get; set; }
+            public string KinesisConnectionString { get; set; }
         }
 
         public static bool TryLoad()
@@ -46,6 +47,7 @@ namespace Orleans.TestingHost
                     var contract = JsonConvert.DeserializeObject<Contract>(input.ReadToEnd());
                     StorageTestConstants.DataConnectionString = contract.DataConnectionString;
                     StorageTestConstants.EventHubConnectionString = contract.EventHubConnectionString;
+                    StorageTestConstants.KinesisConnectionString = contract.KinesisConnectionString;
                     return true;
                 }
             }

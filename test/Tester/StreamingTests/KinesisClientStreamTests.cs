@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
-using Orleans.AzureUtils;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Kinesis;
+using Amazon.Kinesis.Model;
 using Orleans.Kinesis.Providers;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
 using Orleans.TestingHost;
+using OrleansAWSUtils.Storage;
 using Tester.TestStreamProviders;
 using Tester.TestStreamProviders.Kinesis;
 using UnitTests.Grains;
@@ -38,7 +41,7 @@ namespace Tester.StreamingTests
         public KinesisClientStreamTests(ITestOutputHelper output)
         {
             this.output = output;
-            runner = new ClientStreamTestRunner(this.HostedCluster);
+            runner = new ClientStreamTestRunner(HostedCluster);
         }
 
         public override TestCluster CreateTestCluster()
@@ -46,31 +49,39 @@ namespace Tester.StreamingTests
             var options = new TestClusterOptions(2);
             AdjustConfig(options.ClusterConfiguration);
             AdjustConfig(options.ClientConfiguration);
+
             return new TestCluster(options);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            var dataManager = new AzureTableDataManager<TableEntity>(CheckpointerSettings.TableName, CheckpointerSettings.DataConnectionString);
-            dataManager.InitTableAsync().Wait();
-            dataManager.ClearTableAsync().Wait();
-            TestAzureTableStorageStreamFailureHandler.DeleteAll().Wait();
+
+            var dataManager = new DynamoDBStorage(CheckpointerSettings.DataConnectionString);
+            dataManager.InitializeTable(CheckpointerSettings.TableName, new List<KeySchemaElement>
+            {
+                new KeySchemaElement("PartitionKey", KeyType.HASH),
+                new KeySchemaElement("RowKey", KeyType.RANGE)
+            },
+            null).Wait();            
+
+            dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
+            TestDynamoDbStorageStreamFailureHandler.DeleteAll().Wait();
         }
 
         [Fact, TestCategory("Kinesis"), TestCategory("Streaming")]
         public async Task KinesisStreamProducerOnDroppedClientTest()
         {
-            logger.Info("************************ EHStreamProducerOnDroppedClientTest *********************************");
+            logger.Info("************************ StreamProducerOnDroppedClientTest *********************************");
             await runner.StreamProducerOnDroppedClientTest(StreamProviderName, StreamNamespace);
         }
 
         [Fact, TestCategory("Kinesis"), TestCategory("Streaming")]
         public async Task KinesisStreamConsumerOnDroppedClientTest()
         {
-            logger.Info("************************ EHStreamConsumerOnDroppedClientTest *********************************");
+            logger.Info("************************ StreamConsumerOnDroppedClientTest *********************************");
             await runner.StreamConsumerOnDroppedClientTest(StreamProviderName, StreamNamespace, output,
-                () => TestAzureTableStorageStreamFailureHandler.GetDeliveryFailureCount(StreamProviderName), true);
+                () => TestDynamoDbStorageStreamFailureHandler.GetDeliveryFailureCount(StreamProviderName), true);
         }
 
         private static void AdjustConfig(ClusterConfiguration config)

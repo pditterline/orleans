@@ -10,6 +10,7 @@ using Amazon.Kinesis.Model;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 using Orleans.Streams;
+using OrleansAWSUtils;
 
 namespace Orleans.Kinesis.Providers
 {
@@ -228,7 +229,7 @@ namespace Orleans.Kinesis.Providers
         private async Task<string> CreateIterator(KinesisPartitionConfig partitionConfig, string offset)
         {
             var shardIteratorRequest = new GetShardIteratorRequest
-            {
+            {               
                 ShardId = partitionConfig.Shard.ShardId,
                 StreamName = partitionConfig.Hub.StreamName,
             };

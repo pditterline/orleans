@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Kinesis;
+using Amazon.Kinesis.Model;
 using Microsoft.WindowsAzure.Storage.Table;
 using Orleans;
 using Orleans.AzureUtils;
@@ -12,6 +16,7 @@ using Orleans.Runtime.Configuration;
 using Orleans.ServiceBus.Providers;
 using Orleans.Streams;
 using Orleans.TestingHost;
+using OrleansAWSUtils.Storage;
 using TestGrains;
 using UnitTests.Tester;
 using Xunit;
@@ -44,15 +49,22 @@ namespace Tester.StreamingTests
                 options.ClusterConfiguration.AddMemoryStorageProvider("Default");
                 options.ClusterConfiguration.Globals.RegisterStreamProvider<KinesisStreamProvider>(StreamProviderName, BuildProviderSettings());
                 options.ClientConfiguration.RegisterStreamProvider<KinesisStreamProvider>(StreamProviderName, BuildProviderSettings());
+
                 return new TestCluster(options);
             }
 
             public override void Dispose()
             {
                 base.Dispose();
-                var dataManager = new AzureTableDataManager<TableEntity>(CheckpointerSettings.TableName, CheckpointerSettings.DataConnectionString);
-                dataManager.InitTableAsync().Wait();
-                dataManager.ClearTableAsync().Wait();
+                var dataManager = new DynamoDBStorage(CheckpointerSettings.DataConnectionString);
+                dataManager.InitializeTable(CheckpointerSettings.TableName, new List<KeySchemaElement>
+                {
+                    new KeySchemaElement("PartitionKey", KeyType.HASH),
+                    new KeySchemaElement("RowKey", KeyType.RANGE)
+                },
+                    null).Wait();
+
+                dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
             }
 
             private static Dictionary<string, string> BuildProviderSettings()
@@ -81,14 +93,14 @@ namespace Tester.StreamingTests
         [Fact, TestCategory("Kinesis"), TestCategory("Streaming")]
         public async Task Recoverable100EventStreamsWithTransientErrorsTest()
         {
-            logger.Info("************************ EHRecoverable100EventStreamsWithTransientErrorsTest *********************************");
+            logger.Info("************************ Recoverable100EventStreamsWithTransientErrorsTest *********************************");
             await runner.Recoverable100EventStreamsWithTransientErrors(GenerateEvents, ImplicitSubscription_TransientError_RecoverableStream_CollectorGrain.StreamNamespace, 4, 100);
         }
 
         [Fact, TestCategory("Kinesis"), TestCategory("Streaming")]
         public async Task Recoverable100EventStreamsWith1NonTransientErrorTest()
         {
-            logger.Info("************************ EHRecoverable100EventStreamsWith1NonTransientErrorTest *********************************");
+            logger.Info("************************ Recoverable100EventStreamsWith1NonTransientErrorTest *********************************");
             await runner.Recoverable100EventStreamsWith1NonTransientError(GenerateEvents, ImplicitSubscription_NonTransientError_RecoverableStream_CollectorGrain.StreamNamespace, 4, 100);
         }
 

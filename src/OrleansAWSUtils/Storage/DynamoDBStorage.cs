@@ -5,6 +5,7 @@ using Orleans;
 using Orleans.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace OrleansAWSUtils.Storage
     /// <summary>
     /// Wrapper around AWS DynamoDB SDK.
     /// </summary>
-    internal class DynamoDBStorage
+    public class DynamoDBStorage
     {
         private const string AccessKeyPropertyName = "AccessKey";
         private const string SecretKeyPropertyName = "SecretKey";
@@ -191,6 +192,18 @@ namespace OrleansAWSUtils.Storage
                 Logger.Error(ErrorCode.StorageProviderBase, $"Could not delete table {tableName}", exc);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Clears a DynamoDB table the quick way, by deleting and recreating it from the sceham.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public async Task ClearTableAsync(string tableName)
+        {
+            var table = await ddbClient.DescribeTableAsync(tableName);
+            await DeleTableAsync(tableName);
+            await CreateTable(tableName, table.Table.KeySchema, table.Table.AttributeDefinitions);
         }
 
         #endregion

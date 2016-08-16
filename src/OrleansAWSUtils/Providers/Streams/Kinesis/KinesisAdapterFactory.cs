@@ -90,9 +90,7 @@ namespace Orleans.Kinesis.Providers
             adapterConfig.PopulateFromProviderConfig(providerConfig);
             kinesisSettings = adapterConfig.GetKinesisSettings(providerConfig, serviceProvider);
             
-            client = new AmazonKinesisClient(); // KinesisClient.CreateFromConnectionString(kinesisSettings.KinesisConfig, kinesisSettings.StreamName);
-            
-
+            client = new AmazonKinesisClient(kinesisSettings.KinesisConfig); // KinesisClient.CreateFromConnectionString(kinesisSettings.KinesisConfig, kinesisSettings.StreamName);            
 
             if (CheckpointerFactory == null)
             {
@@ -223,12 +221,18 @@ namespace Orleans.Kinesis.Providers
 
         private async Task<List<Shard>> GetStreamShardsAsync(string exclusiveStartShardId = "")
         {
-            var description = await client.DescribeStreamAsync(new DescribeStreamRequest
+            var request = new DescribeStreamRequest
             {
-                ExclusiveStartShardId = exclusiveStartShardId,
                 Limit = 50,
                 StreamName = kinesisSettings.StreamName
-            });
+            };
+
+            if (!string.IsNullOrWhiteSpace(exclusiveStartShardId))
+            {
+                request.ExclusiveStartShardId = exclusiveStartShardId;
+            }
+
+            var description = await client.DescribeStreamAsync(request);
 
             return description.StreamDescription.HasMoreShards
                 ? description.StreamDescription.Shards.Concat(

@@ -28,7 +28,7 @@ namespace Orleans.Kinesis.Providers
             {
                 throw new ArgumentNullException("streamName");
             }
-            KinesisConfig = kinesisConfig.ConfigFromString();            
+            KinesisConfig = new AmazonKinesisConfig {ServiceURL = kinesisConfig};
             StreamName = streamName;
             StartFromNow = startFromNow;
         }
@@ -44,7 +44,7 @@ namespace Orleans.Kinesis.Providers
         /// <returns></returns>
         public void WriteProperties(Dictionary<string, string> properties)
         {
-            properties.Add(ConnectionStringName, KinesisConfig.StringFromConfig());
+            properties.Add(ConnectionStringName, KinesisConfig.ServiceURL);
             properties.Add(PathName, StreamName);
             properties.Add(StartFromNowName, StartFromNow.ToString());
         }
@@ -61,7 +61,7 @@ namespace Orleans.Kinesis.Providers
             {
                 throw new ArgumentOutOfRangeException("providerConfiguration", ConnectionStringName + " not set.");
             }
-            KinesisConfig = savedConfigString.ConfigFromString();
+            KinesisConfig = new AmazonKinesisConfig {ServiceURL = savedConfigString};
 
             StreamName = providerConfiguration.GetProperty(PathName, null);
             if (string.IsNullOrWhiteSpace(StreamName))
@@ -70,18 +70,5 @@ namespace Orleans.Kinesis.Providers
             }
             StartFromNow = providerConfiguration.GetBoolProperty(StartFromNowName, StartFromNowDefault);
         }
-    }
-
-    internal static class KinesisSettingsSerializationHelper
-    {
-        public static AmazonKinesisConfig ConfigFromString(this string kinesisConfig)
-        {
-            return JsonConvert.DeserializeObject<AmazonKinesisConfig>(kinesisConfig);
-        }
-
-        public static string StringFromConfig(this AmazonKinesisConfig kinesisConfig)
-        {
-            return JsonConvert.SerializeObject(kinesisConfig);
-        }
-    }
+    }    
 }

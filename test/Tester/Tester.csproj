@@ -121,6 +121,7 @@
     <Compile Include="StreamingTests\KinesisImplicitSubscriptionStreamRecoveryTests.cs" />
     <Compile Include="StreamingTests\KinesisStreamPerPartitionTests.cs" />
     <Compile Include="StreamingTests\KinesisStreamProviderCheckpointTests.cs" />
+    <Compile Include="StreamingTests\KinesisSubscriptionMultiplicityTests.cs" />
     <Compile Include="StreamingTests\PullingAgentManagementTests.cs" />
     <Compile Include="StreamingTests\DelayedQueueRebalancingTests.cs" />
     <Compile Include="StreamingTests\ImplicitSubscritionRecoverableStreamTestRunner.cs" />
@@ -204,6 +205,10 @@
     <ProjectReference Include="..\..\src\ClientGenerator\ClientGenerator.csproj">
       <Project>{e782dd19-51f7-4f66-8217-bacac33767e4}</Project>
       <Name>ClientGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\OrleansAWSUtils\OrleansAWSUtils.csproj">
+      <Project>{67738E6C-F292-46A2-994D-5B52E745205B}</Project>
+      <Name>OrleansAWSUtils</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\OrleansAzureUtils\OrleansAzureUtils.csproj">
       <Project>{792818ef-b3f8-4ce2-9886-4808713b15c4}</Project>

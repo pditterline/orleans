@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Amazon.Kinesis;
+using Amazon.Kinesis.Model;
 using Microsoft.WindowsAzure.Storage.Table;
 using Orleans;
 using Orleans.AzureUtils;
@@ -14,6 +18,7 @@ using Orleans.ServiceBus.Providers;
 using Orleans.Streams;
 using Orleans.TestingHost;
 using Orleans.TestingHost.Utils;
+using OrleansAWSUtils.Storage;
 using TestGrainInterfaces;
 using TestGrains;
 using UnitTests.Grains;
@@ -30,40 +35,46 @@ namespace UnitTests.StreamingTests
         private const string KinesisCheckpointTable = "kinesischeckpoint";
         private static readonly string CheckpointNamespace = Guid.NewGuid().ToString();
 
-        private static readonly KinesisSettings EventHubConfig = new KinesisSettings(StorageTestConstants.KinesisConnectionString, KinesisStream);
+        private static readonly KinesisSettings KinesisConfig = new KinesisSettings(StorageTestConstants.KinesisConnectionString, KinesisStream);
 
         private static readonly KinesisStreamProviderConfig ProviderConfig = new KinesisStreamProviderConfig(StreamProviderName, 3);
 
-        private static readonly KinesisCheckpointerSettings CheckpointerSettings =
-            new KinesisCheckpointerSettings(StorageTestConstants.DataConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
+        private static readonly KinesisCheckpointerSettings CheckpointerSettings = new KinesisCheckpointerSettings(StorageTestConstants.DataConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
 
         public override TestCluster CreateTestCluster()
         {
             var options = new TestClusterOptions(2);
             AdjustConfig(options.ClusterConfiguration);
             AdjustConfig(options.ClientConfiguration);
+
             return new TestCluster(options);
         }
 
         [Fact, TestCategory("EventHub"), TestCategory("Streaming")]
         public async Task ReloadFromCheckpointTest()
         {
-            logger.Info("************************ EHReloadFromCheckpointTest *********************************");
+            logger.Info("************************ ReloadFromCheckpointTest *********************************");
             await ReloadFromCheckpointTest(ImplicitSubscription_RecoverableStream_CollectorGrain.StreamNamespace, 1, 256);
         }
 
         [Fact, TestCategory("EventHub"), TestCategory("Streaming")]
         public async Task RestartSiloAfterCheckpointTest()
         {
-            logger.Info("************************ EHRestartSiloAfterCheckpointTest *********************************");
+            logger.Info("************************ RestartSiloAfterCheckpointTest *********************************");
             await RestartSiloAfterCheckpointTest(ImplicitSubscription_RecoverableStream_CollectorGrain.StreamNamespace, 8, 32);
         }
 
         public override void Dispose()
         {
-            var dataManager = new AzureTableDataManager<TableEntity>(CheckpointerSettings.TableName, CheckpointerSettings.DataConnectionString);
-            dataManager.InitTableAsync().Wait();
-            dataManager.ClearTableAsync().Wait();
+            var dataManager = new DynamoDBStorage(CheckpointerSettings.DataConnectionString);
+            dataManager.InitializeTable(CheckpointerSettings.TableName, new List<KeySchemaElement>
+                {
+                    new KeySchemaElement("PartitionKey", KeyType.HASH),
+                    new KeySchemaElement("RowKey", KeyType.RANGE)
+                },
+            null).Wait();
+            dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
+
             base.Dispose();
         }
 
@@ -178,7 +189,7 @@ namespace UnitTests.StreamingTests
 
             // get initial settings from configs
             ProviderConfig.WriteProperties(settings);
-            EventHubConfig.WriteProperties(settings);
+            KinesisConfig.WriteProperties(settings);
             CheckpointerSettings.WriteProperties(settings);
 
             // add queue balancer setting

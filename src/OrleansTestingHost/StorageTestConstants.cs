@@ -8,6 +8,7 @@ namespace Orleans.TestingHost
         // Set DefaultStorageDataConnectionString to your actual Azure Storage DataConnectionString, or load if from OrleansTestSecrets
         // private const string DefaultStorageDataConnectionString ="DefaultEndpointsProtocol=https;AccountName=XXX;AccountKey=YYY"
         public static string DataConnectionString { get; set; }
+                
         private const string DEFAULT_STORAGE_DATA_CONNECTION_STRING = "UseDevelopmentStorage=true";
         public static string KinesisConnectionString { get; set; }
         public static string EventHubConnectionString { get; set; }
@@ -22,6 +23,7 @@ namespace Orleans.TestingHost
             if (!OrleansTestSecrets.TryLoad())
             {
                 DataConnectionString = DEFAULT_STORAGE_DATA_CONNECTION_STRING;
+                KinesisConnectionString = "http://localhost:8001";
             }
         }
 
