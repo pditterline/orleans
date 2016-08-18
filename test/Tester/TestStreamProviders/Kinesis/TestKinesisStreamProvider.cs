@@ -11,7 +11,7 @@ namespace Tester.TestStreamProviders.Kinesis
         {
             public AdapterFactory()
             {
-                StreamFailureHandlerFactory = qid => TestAzureTableStorageStreamFailureHandler.Create();
+                StreamFailureHandlerFactory = qid => TestDynamoDbStorageStreamFailureHandler.Create();
             }
         }
     }

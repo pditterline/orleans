@@ -77,8 +77,7 @@ namespace Tester.StreamingTests
             eventCount = 0;
 
             // become stream consumers
-            await SubscribeToStream(streamProviderName, streamGuid, streamNamespace,
-                (e, t) => { eventCount++; return TaskDone.Done; });
+            await SubscribeToStream(streamProviderName, streamGuid, streamNamespace, (e, t) => { eventCount++; return TaskDone.Done; });
 
             // setup producer
             producer = GrainClient.GrainFactory.GetGrain<ISampleStreaming_ProducerGrain>(Guid.NewGuid());

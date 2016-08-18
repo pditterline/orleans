@@ -438,7 +438,7 @@ namespace OrleansAWSUtils.Storage
                 if (Logger.IsVerbose) Logger.Verbose("Unable to find table entry for Keys = {0}", Utils.DictionaryToString(keys));
                 throw;
             }
-        }
+        }       
 
         /// <summary>
         /// Query for multiple entries in a DynamoDB table by filtering its keys
@@ -557,5 +557,6 @@ namespace OrleansAWSUtils.Storage
         }
 
         #endregion
+
     }
 }

@@ -12,7 +12,7 @@ using OrleansAWSUtils.Storage;
 namespace OrleansAWSUtils.Providers.Streams.PersistentStreams
 {
     /// <summary>
-    /// Delivery failure handler that writes failures to azure table storage.
+    /// Delivery failure handler that writes failures to DynamoDb storage.
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     public class DynamoDbStorageStreamFailureHandler<TEntity> : IStreamFailureHandler where TEntity : StreamDeliveryFailureEntity, new()
@@ -24,7 +24,7 @@ namespace OrleansAWSUtils.Providers.Streams.PersistentStreams
         private readonly Func<TEntity> createEntity;
 
         /// <summary>
-        /// Delivery failure handler that writes failures to azure table storage.
+        /// Delivery failure handler that writes failures to DynamoDB storage.
         /// </summary>
         /// <param name="faultOnFailure"></param>
         /// <param name="deploymentId"></param>

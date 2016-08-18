@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
+using Amazon.Runtime;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 using Orleans.Streams;
@@ -68,7 +69,7 @@ namespace Orleans.Kinesis.Providers
             this.logger = logger.GetSubLogger("-receiver");
             config = partitionConfig;
 
-            client = config.Hub.KinesisConfig != null ? new AmazonKinesisClient(config.Hub.KinesisConfig) : new AmazonKinesisClient();
+            client = config.Hub.KinesisConfig != null ? new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials(), config.Hub.KinesisConfig) : new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials());
 
             hubReceiveTimeMetric = $"Orleans.Kinesis.ReceiveTime_{config.Hub.StreamName}";
             partitionReceiveTimeMetric = $"Orleans.Kinesis.ReceiveTime_{config.Hub.StreamName}-{config.Shard}";

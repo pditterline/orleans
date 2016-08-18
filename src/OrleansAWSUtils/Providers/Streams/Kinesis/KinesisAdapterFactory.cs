@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
+using Amazon.Runtime;
 using Amazon.Util;
 using Orleans.Providers;
 using Orleans.Providers.Streams.Common;
@@ -71,16 +72,22 @@ namespace Orleans.Kinesis.Providers
         /// Provider config must contain the kinesis settings type or the settings themselves.
         /// KinesisSettingsType is recommended for consumers that do not want to include secure information in the cluster configuration.
         /// </summary>
-        /// <param name="providerCfg"></param>
-        /// <param name="providerName"></param>
-        /// <param name="log"></param>
-        /// <param name="svcProvider"></param>
+        /// <param name="providerCfg">The provider CFG.</param>
+        /// <param name="providerName">Name of the provider.</param>
+        /// <param name="log">The log.</param>
+        /// <param name="svcProvider">The SVC provider.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// providerCfg
+        /// or
+        /// providerName
+        /// or
+        /// log
+        /// </exception>
         public virtual void Init(IProviderConfiguration providerCfg, string providerName, Logger log, IServiceProvider svcProvider)
         {
             if (providerCfg == null) throw new ArgumentNullException("providerCfg");
             if (string.IsNullOrWhiteSpace(providerName)) throw new ArgumentNullException("providerName");
-            if (log == null) throw new ArgumentNullException("log");
-            //if (svcProvider == null) throw new ArgumentNullException("svcProvider");
+            if (log == null) throw new ArgumentNullException("log");            
 
             providerConfig = providerCfg;
             serviceProvider = svcProvider;
@@ -90,7 +97,7 @@ namespace Orleans.Kinesis.Providers
             adapterConfig.PopulateFromProviderConfig(providerConfig);
             kinesisSettings = adapterConfig.GetKinesisSettings(providerConfig, serviceProvider);
             
-            client = new AmazonKinesisClient(kinesisSettings.KinesisConfig); // KinesisClient.CreateFromConnectionString(kinesisSettings.KinesisConfig, kinesisSettings.StreamName);            
+            client = new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials(), kinesisSettings.KinesisConfig); // KinesisClient.CreateFromConnectionString(kinesisSettings.KinesisConfig, kinesisSettings.StreamName);            
 
             if (CheckpointerFactory == null)
             {
@@ -107,6 +114,7 @@ namespace Orleans.Kinesis.Providers
             if (StreamFailureHandlerFactory == null)
             {
                 //TODO: Add a queue specific default failure handler with reasonable error reporting.
+                // I tried to refactor to use the DynamoDBStorageStreamFailureHanlder but can't seem to get hold of a deploymentId here, it's probably available I've just not got a clear picture of where this sits in the architecture yet.
                 StreamFailureHandlerFactory = partition => Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler());
             }
 

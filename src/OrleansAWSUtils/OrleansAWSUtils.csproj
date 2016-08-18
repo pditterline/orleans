@@ -49,6 +49,7 @@
     <Compile Include="ErrorCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AWSUtils.cs" />
+    <Compile Include="Providers\AWSConfigurationExtensions.cs" />
     <Compile Include="Providers\Streams\Kinesis\ICheckpointerSettings.cs" />
     <Compile Include="Providers\Streams\Kinesis\IKinesisQueueCache.cs" />
     <Compile Include="Providers\Streams\Kinesis\IKinesisSettings.cs" />

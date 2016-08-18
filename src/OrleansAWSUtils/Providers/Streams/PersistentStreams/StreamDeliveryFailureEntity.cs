@@ -136,5 +136,25 @@ namespace OrleansAWSUtils.Providers.Streams.PersistentStreams
                 {"StreamSequenceToken", new AttributeValue { B = new MemoryStream( SequenceToken )} },
             };
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attributeDictionary"></param>
+        /// <returns></returns>
+        public static StreamDeliveryFailureEntity FromAttributeValueDictionary(
+            Dictionary<string, AttributeValue> attributeDictionary)
+        {
+            return new StreamDeliveryFailureEntity
+            {
+                PartitionKey = attributeDictionary["PartitionKey"].S,
+                RowKey = attributeDictionary["RowKey"].S,
+                SubscriptionId = new Guid(attributeDictionary["SubscriptionId"].B.ToArray()),
+                StreamProviderName = attributeDictionary["StreamProviderName"].S,
+                StreamGuid = new Guid(attributeDictionary["StreamGuid"].B.ToArray()),
+                StreamNamespace = attributeDictionary["StreamNamespace"].S,
+                SequenceToken = attributeDictionary["StreamSequenceToken"].B.ToArray(),
+            };
+        }
     }
 }

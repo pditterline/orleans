@@ -30,11 +30,11 @@ namespace Orleans.Storage
     public class DynamoDBStorageProvider : IStorageProvider
     {
         private const int MAX_DATA_SIZE = 400 * 1024;
-        private const string TABLE_NAME_DEFAULT_VALUE = "OrleansGrainState";
-        private const string DELETE_ON_CLEAR_PROPERTY_NAME = "DeleteStateOnClear";
-        private const string TABLE_NAME_PROPERTY_NAME = "TableName";
-        private const string USE_JSON_FORMAT_PROPERTY_NAME = "UseJsonFormat";
-        private const string DATA_CONNECTION_STRING_PROPERTY_NAME = "DataConnectionString";
+        public const string TABLE_NAME_DEFAULT_VALUE = "OrleansGrainState";
+        public const string DELETE_ON_CLEAR_PROPERTY_NAME = "DeleteStateOnClear";
+        public const string TABLE_NAME_PROPERTY_NAME = "TableName";
+        public const string USE_JSON_FORMAT_PROPERTY_NAME = "UseJsonFormat";
+        public const string DATA_CONNECTION_STRING_PROPERTY_NAME = "DataConnectionString";
         private const string GRAIN_REFERENCE_PROPERTY_NAME = "GrainReference";
         private const string STRING_STATE_PROPERTY_NAME = "StringState";
         private const string BINARY_STATE_PROPERTY_NAME = "BinaryState";

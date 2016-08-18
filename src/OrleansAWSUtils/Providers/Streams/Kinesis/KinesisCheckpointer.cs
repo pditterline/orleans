@@ -25,7 +25,7 @@ namespace Orleans.Kinesis.Providers
         private Task inProgressSave;
         private DateTime? throttleSavesUntilUtc;
 
-        public bool CheckpointExists => entity != null && entity.Offset != KinesisPartitionCheckpointEntity.ITERATOR_TYPE_TRIM_HORIZON;
+        public bool CheckpointExists => entity != null && entity.Offset != String.Empty;
 
         public static async Task<IStreamQueueCheckpointer<string>> Create(ICheckpointerSettings settings, string streamProviderName, Shard shard)
         {
@@ -53,8 +53,7 @@ namespace Orleans.Kinesis.Providers
             _storage = new DynamoDBStorage(settings.DataConnectionString);
 
             persistInterval = settings.PersistInterval;
-            
-            //AzureTableDataManager<KinesisPartitionCheckpointEntity>(settings.TableName, settings.DataConnectionString);
+                        
             entity = KinesisPartitionCheckpointEntity.Create(streamProviderName, settings.CheckpointNamespace, shard);
         }
 

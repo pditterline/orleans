@@ -18,7 +18,7 @@ namespace Orleans.Kinesis.Providers
 
         public KinesisPartitionCheckpointEntity()
         {
-            Offset = ITERATOR_TYPE_TRIM_HORIZON;
+            Offset = String.Empty;
         }
 
         public static KinesisPartitionCheckpointEntity Create(string streamProviderName, string checkpointNamespace, Shard shard)
@@ -32,15 +32,13 @@ namespace Orleans.Kinesis.Providers
 
         public static string MakePartitionKey(string streamProviderName, string checkpointNamespace)
         {
-            string key = $"KinesisCheckpoints_{streamProviderName}_{checkpointNamespace}";
-            //return AzureStorageUtils.SanitizeTableProperty(key);
+            string key = $"KinesisCheckpoints_{streamProviderName}_{checkpointNamespace}";            
             return key;
         }
 
         public static string MakeRowKey(Shard partition)
         {
-            string key = $"partition_{partition}";
-            //return AzureStorageUtils.SanitizeTableProperty(key);
+            string key = $"partition_{partition}";            
             return key;
             
         }

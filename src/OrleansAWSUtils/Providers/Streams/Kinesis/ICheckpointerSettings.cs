@@ -8,12 +8,12 @@ namespace Orleans.Kinesis.Providers
     public interface ICheckpointerSettings
     {
         /// <summary>
-        /// Azure table storage data connections string
+        /// DynamoDb table storage data connections string
         /// </summary>
         string DataConnectionString { get; }
 
         /// <summary>
-        /// Azure storage table name where the checkpoints will be stored
+        /// DynamoDb table name where the checkpoints will be stored
         /// </summary>
         string TableName { get; }
 

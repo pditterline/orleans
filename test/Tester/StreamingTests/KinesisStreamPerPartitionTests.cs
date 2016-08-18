@@ -6,9 +6,8 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
-using Microsoft.WindowsAzure.Storage.Table;
+using Amazon.Runtime;
 using Orleans;
-using Orleans.AzureUtils;
 using Orleans.Kinesis.Providers;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
@@ -53,7 +52,7 @@ namespace UnitTests.StreamingTests
                 options.ClientConfiguration.RegisterStreamProvider<KinesisStreamProvider>(StreamProviderName, BuildProviderSettings());
 
                 // While we're building the cluster we should create the stream... not sure where else I can set up the stream in the Kinesis client so far... in production the stream would already exist... for test we need to create and destroy.
-                var kinesisClient = new AmazonKinesisClient(KinesisConfig.KinesisConfig);
+                var kinesisClient = new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials(), KinesisConfig.KinesisConfig);
                 kinesisClient.CreateStreamAsync(new CreateStreamRequest
                 {
                     ShardCount = 2,
@@ -78,7 +77,7 @@ namespace UnitTests.StreamingTests
                         new AttributeDefinition("RowKey", ScalarAttributeType.S),
                     }).Wait();
 
-                var kinesisClient = new AmazonKinesisClient(KinesisConfig.KinesisConfig);
+                var kinesisClient = new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials(), KinesisConfig.KinesisConfig);
                 kinesisClient.DeleteStreamAsync(new DeleteStreamRequest
                 {
                     StreamName = KinesisStream,
