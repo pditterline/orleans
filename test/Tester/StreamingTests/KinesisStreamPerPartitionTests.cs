@@ -40,7 +40,7 @@ namespace UnitTests.StreamingTests
             new EventHubStreamProviderConfig(StreamProviderName);
 
         private static readonly KinesisCheckpointerSettings CheckpointerSettings =
-            new KinesisCheckpointerSettings(StorageTestConstants.DataConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
+            new KinesisCheckpointerSettings(StorageTestConstants.DynamoDBConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
 
         private class Fixture : BaseTestClusterFixture
         {
@@ -72,7 +72,11 @@ namespace UnitTests.StreamingTests
                     new KeySchemaElement("PartitionKey", KeyType.HASH),
                     new KeySchemaElement("RowKey", KeyType.RANGE)
                 },
-                null).Wait();
+                    new List<AttributeDefinition>
+                    {
+                        new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
+                        new AttributeDefinition("RowKey", ScalarAttributeType.S),
+                    }).Wait();
 
                 var kinesisClient = new AmazonKinesisClient(KinesisConfig.KinesisConfig);
                 kinesisClient.DeleteStreamAsync(new DeleteStreamRequest

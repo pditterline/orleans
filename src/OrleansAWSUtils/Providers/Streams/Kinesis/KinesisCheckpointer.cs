@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime.Internal;
 using Orleans.Streams;
 using Orleans.Storage;
 using OrleansAWSUtils.Storage;
@@ -66,7 +67,11 @@ namespace Orleans.Kinesis.Providers
                         new KeySchemaElement("PatitionKey", KeyType.HASH),
                         new KeySchemaElement("RowKey", KeyType.RANGE)
                     },
-                    null
+                    new List<AttributeDefinition>
+                    {
+                        new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
+                        new AttributeDefinition("RowKey", ScalarAttributeType.S),
+                    }
                     );
         }
 

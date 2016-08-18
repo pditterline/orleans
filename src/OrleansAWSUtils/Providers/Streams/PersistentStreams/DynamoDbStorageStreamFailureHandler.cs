@@ -67,8 +67,12 @@ namespace OrleansAWSUtils.Providers.Streams.PersistentStreams
             {
                 new KeySchemaElement("PartitionKey", KeyType.HASH),
                 new KeySchemaElement("RowKey", KeyType.RANGE)
-            }, 
-            null);
+            },
+            new List<AttributeDefinition>
+            { 
+                new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
+                new AttributeDefinition("RowKey", ScalarAttributeType.S),
+            });
         }
 
         /// <summary>

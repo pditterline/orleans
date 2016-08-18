@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -13,6 +15,7 @@ using Orleans.ServiceBus.Providers;
 using Orleans.Storage;
 using Orleans.Streams;
 using Orleans.TestingHost;
+using OrleansAWSUtils.Storage;
 using UnitTests.StreamingTests;
 using UnitTests.Tester;
 using Xunit;
@@ -24,14 +27,14 @@ namespace Tester.StreamingTests
         private const string StreamProviderName = "KinesisStreamProvider";
         private const string StreamNamespace = "StreamNamespace";
         private const string KinesisStream = "kinesisorleanstest";
-        private const string KinesisCheckpointTable = "kinesischeckpoint";
+        private const string KinesisCheckpointTable = "kinesischeckpoint";        
         private static readonly string CheckpointNamespace = Guid.NewGuid().ToString();
 
         public static readonly KinesisStreamProviderConfig ProviderConfig = new KinesisStreamProviderConfig(StreamProviderName);
 
         private static readonly KinesisSettings KinesisConfig = new KinesisSettings(StorageTestConstants.KinesisConnectionString, KinesisStream);
 
-        private static readonly KinesisCheckpointerSettings CheckpointerSettings = new KinesisCheckpointerSettings(StorageTestConstants.DataConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
+        private static readonly KinesisCheckpointerSettings CheckpointerSettings = new KinesisCheckpointerSettings(StorageTestConstants.DynamoDBConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
 
         private readonly SubscriptionMultiplicityTestRunner runner;
 
@@ -48,9 +51,18 @@ namespace Tester.StreamingTests
             public override void Dispose()
             {
                 base.Dispose();
-                var dataManager = new AzureTableDataManager<TableEntity>(CheckpointerSettings.TableName, CheckpointerSettings.DataConnectionString);
-                dataManager.InitTableAsync().Wait();
-                dataManager.ClearTableAsync().Wait();
+                var dataManager = new DynamoDBStorage(StorageTestConstants.DynamoDBConnectionString);
+                dataManager.InitializeTable(CheckpointerSettings.TableName, new List<KeySchemaElement>
+                {
+                    new KeySchemaElement("PartitionKey", KeyType.HASH),
+                    new KeySchemaElement("RowKey", KeyType.RANGE)
+                },
+                    new List<AttributeDefinition>
+            {
+                new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
+                new AttributeDefinition("RowKey", ScalarAttributeType.S),
+            }).Wait();
+                dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
             }
 
             private static void AdjustClusterConfiguration(ClusterConfiguration config)

@@ -36,7 +36,7 @@ namespace Tester.StreamingTests
         private static readonly KinesisStreamProviderConfig ProviderConfig = new KinesisStreamProviderConfig(StreamProviderName);
 
         private static readonly KinesisCheckpointerSettings CheckpointerSettings =
-            new KinesisCheckpointerSettings(StorageTestConstants.KinesisConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
+            new KinesisCheckpointerSettings(StorageTestConstants.DynamoDBConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
 
         private readonly ImplicitSubscritionRecoverableStreamTestRunner runner;
 
@@ -62,7 +62,11 @@ namespace Tester.StreamingTests
                     new KeySchemaElement("PartitionKey", KeyType.HASH),
                     new KeySchemaElement("RowKey", KeyType.RANGE)
                 },
-                    null).Wait();
+                    new List<AttributeDefinition>
+                    {
+                        new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
+                        new AttributeDefinition("RowKey", ScalarAttributeType.S),
+                    }).Wait();
 
                 dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
             }

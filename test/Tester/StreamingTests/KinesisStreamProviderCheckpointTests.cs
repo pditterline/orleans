@@ -39,7 +39,7 @@ namespace UnitTests.StreamingTests
 
         private static readonly KinesisStreamProviderConfig ProviderConfig = new KinesisStreamProviderConfig(StreamProviderName, 3);
 
-        private static readonly KinesisCheckpointerSettings CheckpointerSettings = new KinesisCheckpointerSettings(StorageTestConstants.DataConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
+        private static readonly KinesisCheckpointerSettings CheckpointerSettings = new KinesisCheckpointerSettings(StorageTestConstants.DynamoDBConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
 
         public override TestCluster CreateTestCluster()
         {
@@ -72,7 +72,11 @@ namespace UnitTests.StreamingTests
                     new KeySchemaElement("PartitionKey", KeyType.HASH),
                     new KeySchemaElement("RowKey", KeyType.RANGE)
                 },
-            null).Wait();
+            new List<AttributeDefinition>
+            {
+                new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
+                new AttributeDefinition("RowKey", ScalarAttributeType.S),
+            }).Wait();
             dataManager.ClearTableAsync(CheckpointerSettings.TableName).Wait();
 
             base.Dispose();

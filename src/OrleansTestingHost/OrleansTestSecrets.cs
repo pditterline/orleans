@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Security.AccessControl;
 using Newtonsoft.Json;
 
 namespace Orleans.TestingHost
@@ -28,6 +29,7 @@ namespace Orleans.TestingHost
             public string DataConnectionString { get; set; }
             public string EventHubConnectionString { get; set; }
             public string KinesisConnectionString { get; set; }
+            public string DynamoDbConnectionString { get; set; }
         }
 
         public static bool TryLoad()
@@ -48,6 +50,7 @@ namespace Orleans.TestingHost
                     StorageTestConstants.DataConnectionString = contract.DataConnectionString;
                     StorageTestConstants.EventHubConnectionString = contract.EventHubConnectionString;
                     StorageTestConstants.KinesisConnectionString = contract.KinesisConnectionString;
+                    StorageTestConstants.DynamoDBConnectionString = contract.DataConnectionString;
                     return true;
                 }
             }

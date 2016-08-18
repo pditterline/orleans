@@ -80,7 +80,7 @@ namespace Orleans.Kinesis.Providers
             if (providerCfg == null) throw new ArgumentNullException("providerCfg");
             if (string.IsNullOrWhiteSpace(providerName)) throw new ArgumentNullException("providerName");
             if (log == null) throw new ArgumentNullException("log");
-            if (svcProvider == null) throw new ArgumentNullException("svcProvider");
+            //if (svcProvider == null) throw new ArgumentNullException("svcProvider");
 
             providerConfig = providerCfg;
             serviceProvider = svcProvider;
