@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
@@ -99,6 +100,8 @@ namespace Orleans.Kinesis.Providers
             
             client = new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials(), kinesisSettings.KinesisConfig); // KinesisClient.CreateFromConnectionString(kinesisSettings.KinesisConfig, kinesisSettings.StreamName);            
 
+            CheckOrCreateStream();
+
             if (CheckpointerFactory == null)
             {
                 checkpointerSettings = adapterConfig.GetCheckpointerSettings(providerConfig, serviceProvider);
@@ -124,6 +127,27 @@ namespace Orleans.Kinesis.Providers
             }
 
             logger = log.GetLogger($"Kinesis.{kinesisSettings.StreamName}");
+        }
+
+        private void CheckOrCreateStream()
+        {
+            DescribeStreamResponse response;
+            try
+            {
+                response = client.DescribeStream(new DescribeStreamRequest { StreamName = kinesisSettings.StreamName });
+            }
+            catch (Exception)
+            {
+                client.CreateStream(new CreateStreamRequest {ShardCount = 5, StreamName = kinesisSettings.StreamName});
+                Thread.Sleep(5000);
+                response = client.DescribeStream(new DescribeStreamRequest { StreamName = kinesisSettings.StreamName });
+            }
+
+            while (response.StreamDescription.StreamStatus != StreamStatus.ACTIVE)
+            {
+                response = client.DescribeStream(new DescribeStreamRequest { StreamName = kinesisSettings.StreamName });
+                logger.Info($"Waiting for kinesis stream {kinesisSettings.StreamName} to be ready, current status {response.StreamDescription.StreamStatus}");
+            }
         }
 
         /// <summary>

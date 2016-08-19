@@ -235,7 +235,6 @@ namespace Orleans.Kinesis.Providers
                 StreamName = partitionConfig.Hub.StreamName,
             };
 
-
             //KinesisClient client = KinesisClient.CreateFromConnectionString(partitionConfig.Hub.KinesisConfig, partitionConfig.Hub.StreamName);
             //KinesisConsumerGroup consumerGroup = client.GetConsumerGroup(partitionConfig.Hub.ConsumerGroup);
             //// if we have a starting offset or if we're not configured to start reading from utc now, read from offset

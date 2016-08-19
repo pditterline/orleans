@@ -165,7 +165,7 @@ namespace Orleans.Kinesis.Providers
 
         public virtual StreamPosition GetStreamPosition(Record queueMessage)
         {
-            Guid streamGuid = Guid.Parse(queueMessage.PartitionKey);
+            Guid streamGuid = queueMessage.GetStreamGuidProperty();
             string streamNamespace = queueMessage.GetStreamNamespaceProperty();
             IStreamIdentity stremIdentity = new StreamIdentity(streamGuid, streamNamespace);
             StreamSequenceToken token = new KinesisStreamSequenceToken(_shardId, BigInteger.Parse(queueMessage.SequenceNumber));
@@ -207,7 +207,7 @@ namespace Orleans.Kinesis.Providers
         // Placed object message payload into a segment.
         private ArraySegment<byte> EncodeMessageIntoSegment(StreamPosition streamPosition, Record queueMessage)
         {
-            byte[] payload = queueMessage.Data.GetBuffer();
+            byte[] payload = queueMessage.Data.ToArray();
             // get size of namespace, offset, properties, and payload
             int size = SegmentBuilder.CalculateAppendSize(streamPosition.StreamIdentity.Namespace) +
             SegmentBuilder.CalculateAppendSize(queueMessage.SequenceNumber) +

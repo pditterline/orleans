@@ -63,15 +63,14 @@ namespace Orleans.Kinesis.Providers
                 _storage.InitializeTable(_settings.TableName,
                     new List<KeySchemaElement>
                     {
-                        new KeySchemaElement("PatitionKey", KeyType.HASH),
+                        new KeySchemaElement("PartitionKey", KeyType.HASH),
                         new KeySchemaElement("RowKey", KeyType.RANGE)
                     },
                     new List<AttributeDefinition>
                     {
                         new AttributeDefinition("PartitionKey", ScalarAttributeType.S),
                         new AttributeDefinition("RowKey", ScalarAttributeType.S),
-                    }
-                    );
+                    });
         }
 
         public async Task<string> Load()
@@ -116,7 +115,7 @@ namespace Orleans.Kinesis.Providers
                 },
                 new Dictionary<string, AttributeValue>()
                 {
-                    {"Offset", new AttributeValue(entity.Offset) }
+                    {"StreamOffset", new AttributeValue(entity.Offset) }
                 });
             inProgressSave.Ignore();
         }
@@ -129,7 +128,7 @@ namespace Orleans.Kinesis.Providers
         {
             return new KinesisPartitionCheckpointEntity
             {
-                Offset = entityData["Offset"].S,
+                Offset = entityData["StreamOffset"].S,
                 PartitionKey = entityData["PartitionKey"].S,
                 RowKey = entityData["RowKey"].S,
             };
