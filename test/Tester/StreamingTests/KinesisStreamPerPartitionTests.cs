@@ -28,7 +28,7 @@ namespace UnitTests.StreamingTests
     public class KinesisStreamPerPartitionTests : OrleansTestingBase, IClassFixture<KinesisStreamPerPartitionTests.Fixture>
     {
         private const string StreamProviderName = "KinesisStreamPerPartition";        
-        private const string KinesisStream = "kinesisorleanstest";
+        private const string KinesisStream = "kinesisorleansstreamperpartitiontest";
         private const string KinesisCheckpointTable = "kinesischeckpoint";
         private static readonly string CheckpointNamespace = Guid.NewGuid().ToString();
 
@@ -55,7 +55,7 @@ namespace UnitTests.StreamingTests
                 var kinesisClient = new AmazonKinesisClient(new EnvironmentVariablesAWSCredentials(), KinesisConfig.KinesisConfig);
                 kinesisClient.CreateStreamAsync(new CreateStreamRequest
                 {
-                    ShardCount = 2,
+                    ShardCount = 5,
                     StreamName = KinesisStream,
                 }).Wait();
 

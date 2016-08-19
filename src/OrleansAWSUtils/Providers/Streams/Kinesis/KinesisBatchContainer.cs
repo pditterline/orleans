@@ -11,7 +11,7 @@ using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams;
 
-namespace Orleans.ServiceBus.Providers
+namespace Orleans.Providers
 {
     /// <summary>
     /// Batch container that is delivers payload and stream position information for a set of events in an EventHub EventData.

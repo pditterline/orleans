@@ -12,8 +12,7 @@ namespace Orleans.Kinesis.Providers
     {
         private readonly Dictionary<QueueId, Shard> partitionDictionary = new Dictionary<QueueId, Shard>();
 
-        public KinesisQueueMapper(List<Shard> shards, string queueNamePrefix)
-            : base(shards.Count, queueNamePrefix)
+        public KinesisQueueMapper(List<Shard> shards, string queueNamePrefix) : base(shards.Count, queueNamePrefix)
         {
             QueueId[] queues = GetAllQueues().ToArray();
             if (queues.Length != shards.Count)

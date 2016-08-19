@@ -7,7 +7,7 @@ using Amazon.Kinesis.Model;
 using Orleans.Providers.Streams.Common;
 using Orleans.Streams;
 using System.Numerics;
-using Orleans.ServiceBus.Providers;
+using Orleans.Providers;
 using static System.String;
 
 namespace Orleans.Kinesis.Providers
@@ -37,7 +37,7 @@ namespace Orleans.Kinesis.Providers
             int readOffset = 0;
             StreamIdentity = new StreamIdentity(cachedMessage.StreamGuid, SegmentBuilder.ReadNextString(cachedMessage.Segment, ref readOffset));
             ShardId = cachedMessage.ShardId;
-            SequenceNumber = cachedMessage.SequenceNumber;
+            SequenceNumber = BigInteger.Parse(SegmentBuilder.ReadNextString(cachedMessage.Segment, ref readOffset));
             EnqueueTimeUtc = cachedMessage.EnqueueTimeUtc;
             DequeueTimeUtc = cachedMessage.DequeueTimeUtc;                        
             Payload = SegmentBuilder.ReadNextBytes(cachedMessage.Segment, ref readOffset).ToArray();
@@ -56,6 +56,7 @@ namespace Orleans.Kinesis.Providers
         BigInteger SequenceNumber { get; }
     }
 
+    [Serializable]
     internal class KinesisStreamSequenceToken : StreamSequenceToken, IKinesisStreamPartitionLocation
     {        
         public BigInteger SequenceNumber { get; set; }

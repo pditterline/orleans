@@ -113,10 +113,9 @@ namespace OrleansAWSUtils.Storage
 
         private void CreateClient()
         {
-            if (service.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase) ||
-                service.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
+            if (service.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase) || service.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
             {
-                ddbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { ServiceURL = service });
+                ddbClient = new AmazonDynamoDBClient(new EnvironmentVariablesAWSCredentials(), new AmazonDynamoDBConfig { ServiceURL = service });
             }
             else
             {

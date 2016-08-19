@@ -46,6 +46,7 @@ namespace Orleans.Kinesis.Providers
         private IKinesisQueueCache cache;
         private IAmazonKinesis client;
         private string shardIterator;
+        private DateTime shardIteratorTime;
 
         //private KinesisReceiver receiver;
         private IStreamQueueCheckpointer<string> checkpointer;
@@ -125,7 +126,16 @@ namespace Orleans.Kinesis.Providers
             List<Record> messages;
             try
             {
-                var watch = Stopwatch.StartNew();
+
+                if ((DateTime.UtcNow - shardIteratorTime).TotalSeconds > 290)
+                {
+                    //The iterator has expired, so we'll re-initialize.
+                    logger.Warn(KinesisErrorCode.Kinesis, "Iterator expired. Retrying initialization of Kinesis partition {0}-{1}.", config.Hub.StreamName, config.Shard);
+                    await Initialize();
+                }
+
+                var watch = Stopwatch.StartNew();                
+
                 var response =
                     await
                         client.GetRecordsAsync(new GetRecordsRequest {Limit = maxCount, ShardIterator = shardIterator});
@@ -240,17 +250,21 @@ namespace Orleans.Kinesis.Providers
             //// if we have a starting offset or if we're not configured to start reading from utc now, read from offset
             if (!partitionConfig.Hub.StartFromNow || offset != string.Empty)
             {
-                shardIteratorRequest.ShardIteratorType =
-                    KinesisPartitionCheckpointEntity.ITERATOR_TYPE_AFTER_SEQUENCE_NUMBER;
+                shardIteratorRequest.ShardIteratorType = KinesisPartitionCheckpointEntity.ITERATOR_TYPE_AFTER_SEQUENCE_NUMBER;
                 shardIteratorRequest.StartingSequenceNumber = offset;
-                logger.Info("Starting to read from Kinesis partition {0}-{1} at offset {2}", partitionConfig.Hub.StreamName, partitionConfig.Shard, offset);
+                logger.Info("Starting to read from Kinesis partition {0}-{1} at offset {2}", partitionConfig.Hub.StreamName, partitionConfig.Shard.ShardId, offset);
             }
             else
             {
                 shardIteratorRequest.ShardIteratorType = KinesisPartitionCheckpointEntity.ITERATOR_TYPE_LATEST;
                 logger.Info("Starting to read latest messages from Kinesis partition {0}-{1} at offset {2}", partitionConfig.Hub.StreamName, partitionConfig.Shard, offset);
             }
-            return (await client.GetShardIteratorAsync(shardIteratorRequest)).ShardIterator;
+
+            shardIteratorTime = DateTime.UtcNow;
+
+            var response = await client.GetShardIteratorAsync(shardIteratorRequest);
+
+            return response.ShardIterator;
         }
 
         private class StreamActivityNotificationBatch : IBatchContainer

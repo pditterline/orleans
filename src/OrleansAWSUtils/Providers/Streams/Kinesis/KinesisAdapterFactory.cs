@@ -12,7 +12,6 @@ using Amazon.Util;
 using Orleans.Providers;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
-using Orleans.ServiceBus.Providers;
 using Orleans.Streams;
 
 namespace Orleans.Kinesis.Providers
@@ -84,7 +83,7 @@ namespace Orleans.Kinesis.Providers
         /// or
         /// log
         /// </exception>
-        public virtual void Init(IProviderConfiguration providerCfg, string providerName, Logger log, IServiceProvider svcProvider)
+        public async virtual void Init(IProviderConfiguration providerCfg, string providerName, Logger log, IServiceProvider svcProvider)
         {
             if (providerCfg == null) throw new ArgumentNullException("providerCfg");
             if (string.IsNullOrWhiteSpace(providerName)) throw new ArgumentNullException("providerName");
@@ -123,7 +122,7 @@ namespace Orleans.Kinesis.Providers
 
             if (QueueMapperFactory == null)
             {
-                QueueMapperFactory = partitions => new KinesisQueueMapper(shards, adapterConfig.StreamProviderName);
+                QueueMapperFactory = partitions => new KinesisQueueMapper(partitions, adapterConfig.StreamProviderName);
             }
 
             logger = log.GetLogger($"Kinesis.{kinesisSettings.StreamName}");
@@ -138,7 +137,7 @@ namespace Orleans.Kinesis.Providers
             }
             catch (Exception)
             {
-                client.CreateStream(new CreateStreamRequest {ShardCount = 5, StreamName = kinesisSettings.StreamName});
+                client.CreateStream(new CreateStreamRequest {ShardCount = 2, StreamName = kinesisSettings.StreamName});
                 Thread.Sleep(5000);
                 response = client.DescribeStream(new DescribeStreamRequest { StreamName = kinesisSettings.StreamName });
             }
