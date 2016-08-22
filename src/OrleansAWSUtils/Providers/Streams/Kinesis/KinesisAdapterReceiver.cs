@@ -250,14 +250,14 @@ namespace Orleans.Kinesis.Providers
             //// if we have a starting offset or if we're not configured to start reading from utc now, read from offset
             if (!partitionConfig.Hub.StartFromNow || offset != string.Empty)
             {
-                shardIteratorRequest.ShardIteratorType = KinesisPartitionCheckpointEntity.ITERATOR_TYPE_AFTER_SEQUENCE_NUMBER;
+                shardIteratorRequest.ShardIteratorType = KinesisPartitionIteratorType.ITERATOR_TYPE_AFTER_SEQUENCE_NUMBER;
                 shardIteratorRequest.StartingSequenceNumber = offset;
                 logger.Info("Starting to read from Kinesis partition {0}-{1} at offset {2}", partitionConfig.Hub.StreamName, partitionConfig.Shard.ShardId, offset);
             }
             else
             {
-                shardIteratorRequest.ShardIteratorType = KinesisPartitionCheckpointEntity.ITERATOR_TYPE_LATEST;
-                logger.Info("Starting to read latest messages from Kinesis partition {0}-{1} at offset {2}", partitionConfig.Hub.StreamName, partitionConfig.Shard, offset);
+                shardIteratorRequest.ShardIteratorType = KinesisPartitionIteratorType.ITERATOR_TYPE_TRIM_HORIZON;
+                logger.Info("Starting to read earliest messages from Kinesis partition {0}-{1} at offset {2}", partitionConfig.Hub.StreamName, partitionConfig.Shard, offset);
             }
 
             shardIteratorTime = DateTime.UtcNow;

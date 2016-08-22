@@ -68,22 +68,6 @@ namespace Orleans.Providers
             return true;
         }
 
-        //internal static Record ToRecord<T>(Guid streamGuid, String streamNamespace, IEnumerable<T> events, Dictionary<string, object> requestContext)
-        //{
-        //    var payload = new Body
-        //    {
-        //        Events = events.Cast<object>().ToList(),
-        //        RequestContext = requestContext
-        //    };
-        //    var bytes = SerializationManager.SerializeToByteArray(payload);
-        //    var eventData = new EventData(bytes) { PartitionKey = streamGuid.ToString() };
-        //    if (!string.IsNullOrWhiteSpace(streamNamespace))
-        //    {
-        //        eventData.SetStreamNamespaceProperty(streamNamespace);
-        //    }
-        //    return eventData;
-        //}
-
         internal static PutRecordsRequest ToPutRecordsRequest<T>(string streamName, IStreamIdentity streamIdentity, IEnumerable<T> events, Dictionary<string, object> requestContext)
         {
             return new PutRecordsRequest

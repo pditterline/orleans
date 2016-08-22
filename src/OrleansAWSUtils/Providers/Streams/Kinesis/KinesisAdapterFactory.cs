@@ -110,7 +110,7 @@ namespace Orleans.Kinesis.Providers
             if (CacheFactory == null)
             {
                 var bufferPool = new FixedSizeObjectPool<FixedSizeBuffer>(adapterConfig.CacheSizeMb, () => new FixedSizeBuffer(1 << 20));
-                CacheFactory = (partition,checkpointer,cacheLogger) => new KinesisQueueCache(checkpointer, bufferPool, cacheLogger);
+                CacheFactory = (partition,checkpointer,cacheLogger) => new KinesisQueueCache(partition, checkpointer, bufferPool, cacheLogger);
             }
 
             if (StreamFailureHandlerFactory == null)

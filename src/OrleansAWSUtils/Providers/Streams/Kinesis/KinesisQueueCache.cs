@@ -210,28 +210,31 @@ namespace Orleans.Kinesis.Providers
     /// </summary>
     public class KinesisQueueCache : KinesisQueueCache<CachedKinesisMessage>
     {
+        private readonly Shard _partition;
         private readonly Logger log;
 
         /// <summary>
         /// Construct cache given a buffer pool.  Will use default data adapter
         /// </summary>
+        /// <param name="partition"></param>
         /// <param name="checkpointer"></param>
         /// <param name="bufferPool"></param>
         /// <param name="logger"></param>
-        public KinesisQueueCache(IStreamQueueCheckpointer<string> checkpointer, IObjectPool<FixedSizeBuffer> bufferPool, Logger logger)
-            : this(checkpointer, new KinesisDataAdapter(bufferPool), logger)
+        public KinesisQueueCache(Shard partition, IStreamQueueCheckpointer<string> checkpointer, IObjectPool<FixedSizeBuffer> bufferPool, Logger logger)
+            : this(checkpointer, new KinesisDataAdapter(partition.ShardId, bufferPool), logger)
         {
         }
 
         /// <summary>
         /// Construct cache given a custom data adapter.
         /// </summary>
+        /// <param name="partition"></param>
         /// <param name="checkpointer"></param>
         /// <param name="cacheDataAdapter"></param>
         /// <param name="logger"></param>
         public KinesisQueueCache(IStreamQueueCheckpointer<string> checkpointer, ICacheDataAdapter<Record, CachedKinesisMessage> cacheDataAdapter, Logger logger)
             : base(KinesisAdapterReceiver.MaxMessagesPerRead, checkpointer, cacheDataAdapter, KinesisDataComparer.Instance, logger)
-        {
+        {            
             log = logger.GetSubLogger("-ehcache");
         }
 

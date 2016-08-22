@@ -125,10 +125,11 @@ namespace Orleans.Kinesis.Providers
 
         public Action<IDisposable> PurgeAction { private get; set; }
 
-        private string _shardId;
+        private readonly string _shardId;
 
-        public KinesisDataAdapter(IObjectPool<FixedSizeBuffer> bufferPool)
+        public KinesisDataAdapter(string shardId, IObjectPool<FixedSizeBuffer> bufferPool)
         {
+            _shardId = shardId;
             if (bufferPool == null)
             {
                 throw new ArgumentNullException("bufferPool");
@@ -138,9 +139,10 @@ namespace Orleans.Kinesis.Providers
 
         public StreamPosition QueueMessageToCachedMessage(ref CachedKinesisMessage cachedMessage, Record queueMessage, DateTime dequeueTimeUtc)
         {
-            _shardId = cachedMessage.ShardId;
+            //_shardId = cachedMessage.ShardId;
             StreamPosition streamPosition = GetStreamPosition(queueMessage);
             cachedMessage.StreamGuid = streamPosition.StreamIdentity.Guid;
+            cachedMessage.ShardId = _shardId;
             cachedMessage.SequenceNumber = BigInteger.Parse(queueMessage.SequenceNumber);
             cachedMessage.EnqueueTimeUtc = queueMessage.ApproximateArrivalTimestamp;
             cachedMessage.DequeueTimeUtc = dequeueTimeUtc;
