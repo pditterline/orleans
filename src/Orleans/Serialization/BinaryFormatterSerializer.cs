@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETSTANDARD_TODO
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -6,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Orleans.Runtime;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD
 namespace Orleans.Serialization
 {
     public class BinaryFormatterSerializer : IExternalSerializer
@@ -123,4 +124,5 @@ namespace Orleans.Serialization
         }
     }
 }
+#endif
 #endif
