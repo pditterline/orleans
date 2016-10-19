@@ -35,9 +35,6 @@ namespace UnitTests.StreamingTests
 
         private static readonly KinesisSettings KinesisConfig = new KinesisSettings(StorageTestConstants.KinesisConnectionString, KinesisStream);
 
-        private static readonly EventHubStreamProviderConfig ProviderConfig =
-            new EventHubStreamProviderConfig(StreamProviderName);
-
         private static readonly KinesisCheckpointerSettings CheckpointerSettings =
             new KinesisCheckpointerSettings(StorageTestConstants.DynamoDBConnectionString, KinesisCheckpointTable, CheckpointNamespace, TimeSpan.FromSeconds(1));
 
@@ -92,7 +89,6 @@ namespace UnitTests.StreamingTests
                 var settings = new Dictionary<string, string>();
 
                 // get initial settings from configs
-                ProviderConfig.WriteProperties(settings);
                 KinesisConfig.WriteProperties(settings);
                 CheckpointerSettings.WriteProperties(settings);
 

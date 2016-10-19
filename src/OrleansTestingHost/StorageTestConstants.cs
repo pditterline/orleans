@@ -14,7 +14,9 @@ namespace Orleans.TestingHost
 
         /// <summary> The default storage connection string </summary>
         private const string DEFAULT_STORAGE_DATA_CONNECTION_STRING = "UseDevelopmentStorage=true";
+        /// <summary> Get or set the connection string to Kinesis </summary>
         public static string KinesisConnectionString { get; set; }
+        /// <summary> Get or set the connection string to DynamoDB </summary>
         public static string DynamoDBConnectionString { get; set; }
 
         /// <summary> Get or set the connection string to event hub </summary>

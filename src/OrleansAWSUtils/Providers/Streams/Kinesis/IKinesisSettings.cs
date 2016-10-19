@@ -4,9 +4,18 @@ using Amazon.Kinesis;
 
 namespace Orleans.Kinesis.Providers
 {
+    /// <summary>
+    /// Interface for Kinesis provider settings.
+    /// </summary>
     public interface IKinesisSettings
     {
+        /// <summary>
+        /// Kinesis configuration.
+        /// </summary>
         AmazonKinesisConfig KinesisConfig { get; }
+        /// <summary>
+        /// Kinesis stream name.
+        /// </summary>
         string StreamName { get; }
         
         /// <summary>

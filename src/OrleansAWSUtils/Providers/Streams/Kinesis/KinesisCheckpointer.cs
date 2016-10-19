@@ -4,11 +4,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using Amazon.Runtime.Internal;
 using Orleans.Streams;
-using Orleans.Storage;
 using OrleansAWSUtils.Storage;
-using ResourceNotFoundException = Amazon.Kinesis.Model.ResourceNotFoundException;
 using Shard = Amazon.Kinesis.Model.Shard;
 
 namespace Orleans.Kinesis.Providers
@@ -25,8 +22,18 @@ namespace Orleans.Kinesis.Providers
         private Task inProgressSave;
         private DateTime? throttleSavesUntilUtc;
 
+        /// <summary>
+        /// Indicates if a checkpoint exists
+        /// </summary>
         public bool CheckpointExists => entity != null && entity.Offset != String.Empty;
 
+        /// <summary>
+        /// Factory function that creates and initializes the checkpointer
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="streamProviderName"></param>
+        /// <param name="shard"></param>
+        /// <returns></returns>
         public static async Task<IStreamQueueCheckpointer<string>> Create(ICheckpointerSettings settings, string streamProviderName, Shard shard)
         {
             var checkpointer = new KinesisCheckpointer(settings, streamProviderName, shard);
@@ -73,6 +80,10 @@ namespace Orleans.Kinesis.Providers
                     });
         }
 
+        /// <summary>
+        /// Loads a checkpoint
+        /// </summary>
+        /// <returns></returns>
         public async Task<string> Load()
         {
             var result = await _storage.ReadSingleEntryAsync(_settings.TableName,
@@ -90,6 +101,11 @@ namespace Orleans.Kinesis.Providers
             return entity.Offset;
         }
 
+        /// <summary>
+        /// Updates the checkpoint.  This is a best effort.  It does not always update the checkpoint.
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="utcNow"></param>
         public void Update(string offset, DateTime utcNow)
         {
             // if offset has not changed, do nothing

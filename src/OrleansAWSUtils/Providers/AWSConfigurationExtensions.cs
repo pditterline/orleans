@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Orleans.Serialization;
 using Orleans.Storage;
-using OrleansAWSUtils.Storage;
 
 namespace Orleans.Runtime.Configuration
 {
+    /// <summary>
+    /// Extension methods for AWS providers.
+    /// </summary>
     public static class AWSConfigurationExtensions
     {
         /// <summary>
@@ -45,8 +44,8 @@ namespace Orleans.Runtime.Configuration
 
             if (useJsonFormat)
             {
-                properties.Add(SerializationManager.UseFullAssemblyNamesProperty, useFullAssemblyNames.ToString());
-                properties.Add(SerializationManager.IndentJsonProperty, indentJson.ToString());
+                properties.Add(OrleansJsonSerializer.UseFullAssemblyNamesProperty, useFullAssemblyNames.ToString());
+                properties.Add(OrleansJsonSerializer.IndentJsonProperty, indentJson.ToString());
             }
 
             config.Globals.RegisterStorageProvider<DynamoDBStorageProvider>(providerName, properties);

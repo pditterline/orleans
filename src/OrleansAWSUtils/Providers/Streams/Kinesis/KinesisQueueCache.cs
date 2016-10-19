@@ -210,7 +210,6 @@ namespace Orleans.Kinesis.Providers
     /// </summary>
     public class KinesisQueueCache : KinesisQueueCache<CachedKinesisMessage>
     {
-        private readonly Shard _partition;
         private readonly Logger log;
 
         /// <summary>
@@ -228,7 +227,6 @@ namespace Orleans.Kinesis.Providers
         /// <summary>
         /// Construct cache given a custom data adapter.
         /// </summary>
-        /// <param name="partition"></param>
         /// <param name="checkpointer"></param>
         /// <param name="cacheDataAdapter"></param>
         /// <param name="logger"></param>

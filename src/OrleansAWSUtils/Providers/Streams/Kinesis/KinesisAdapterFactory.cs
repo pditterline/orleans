@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
 using Amazon.Runtime;
-using Amazon.Util;
 using Orleans.Providers;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
@@ -21,17 +20,34 @@ namespace Orleans.Kinesis.Providers
     /// </summary>
     public class KinesisAdapterFactory : IQueueAdapterFactory, IQueueAdapter, IQueueAdapterCache
     {
+        /// <summary>
+        /// Orleans logging
+        /// </summary>
         protected Logger logger;
+        /// <summary>
+        /// Framework service provider
+        /// </summary>
         protected IServiceProvider serviceProvider;
+        /// <summary>
+        /// Provider configuration
+        /// </summary>
         protected IProviderConfiguration providerConfig;
+        /// <summary>
+        /// Stream provider settings
+        /// </summary>
         protected KinesisStreamProviderConfig adapterConfig;
+        /// <summary>
+        /// Kinesis settings
+        /// </summary>
         protected IKinesisSettings kinesisSettings;
+        /// <summary>
+        /// Checkpointer settings
+        /// </summary>
         protected ICheckpointerSettings checkpointerSettings;
         private IKinseisQueueMapper streamQueueMapper;
         private List<Shard> shards;
         private ConcurrentDictionary<QueueId, KinesisAdapterReceiver> receivers;
-        private Amazon.Kinesis.AmazonKinesisClient client;
-        private AmazonKinesisConfig clientConfig;
+        private AmazonKinesisClient client;
 
         /// <summary>
         /// Name of the adapter. Primarily for logging purposes

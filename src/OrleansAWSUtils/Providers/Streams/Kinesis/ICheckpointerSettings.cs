@@ -5,6 +5,9 @@ using Orleans.Providers;
 
 namespace Orleans.Kinesis.Providers
 {
+    /// <summary>
+    /// Setting interface for checkpointer.
+    /// </summary>
     public interface ICheckpointerSettings
     {
         /// <summary>
@@ -28,6 +31,9 @@ namespace Orleans.Kinesis.Providers
         string CheckpointNamespace { get; }
     }
 
+    /// <summary>
+    /// Kinesis checkpointer settings.
+    /// </summary>
     public class KinesisCheckpointerSettings : ICheckpointerSettings
     {
         private const string DataConnectionStringName = "CheckpointerDataConnectionString";
@@ -36,8 +42,18 @@ namespace Orleans.Kinesis.Providers
         private const string CheckpointNamespaceName = "CheckpointNamespace";
         private static readonly TimeSpan DefaultPersistInterval = TimeSpan.FromMinutes(1);
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public KinesisCheckpointerSettings(){}
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="dataConnectionString"></param>
+        /// <param name="table"></param>
+        /// <param name="checkpointNamespace"></param>
+        /// <param name="persistInterval"></param>
         public KinesisCheckpointerSettings(string dataConnectionString, string table, string checkpointNamespace, TimeSpan? persistInterval = null)
         {
             if (string.IsNullOrWhiteSpace(dataConnectionString))
@@ -58,9 +74,21 @@ namespace Orleans.Kinesis.Providers
             PersistInterval = persistInterval.HasValue ? persistInterval.Value : DefaultPersistInterval;
         }
 
+        /// <summary>
+        /// Database connection string.
+        /// </summary>
         public string DataConnectionString { get; private set; }
+        /// <summary>
+        /// Database table name.
+        /// </summary>
         public string TableName { get; private set; }
+        /// <summary>
+        /// Interval to write checkpoints.
+        /// </summary>
         public TimeSpan PersistInterval { get; private set; }
+        /// <summary>
+        /// Unique namespace for checkpoint data.  Is similar to consumer group.
+        /// </summary>
         public string CheckpointNamespace { get; private set; }
 
         /// <summary>

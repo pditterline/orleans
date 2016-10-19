@@ -6,26 +6,89 @@ using Orleans.Providers;
 
 namespace Orleans.Kinesis.Providers
 {
+    /// <summary>
+    /// Configuration settings for the Kinesis stream provider.
+    /// </summary>
     public class KinesisStreamProviderConfig
     {
+        /// <summary>
+        /// KinesisSettingsType setting name.
+        /// </summary>
         public const string KinesisConfigTypeName = "KinesisSettingsType";
+        /// <summary>
+        /// EventHub configuration type.  Type must conform to IEventHubSettings interface.
+        /// </summary>
         public Type KinesisSettingsType { get; set; }
 
+        /// <summary>
+        /// CheckpointerSettingsType setting name.
+        /// </summary>
         public const string CheckpointerSettingsTypeName = "CheckpointerSettingsType";
+        /// <summary>
+        /// Checkpoint settings type.  Type must conform to ICheckpointerSettings interface.
+        /// </summary>
         public Type CheckpointerSettingsType { get; set; }
 
+        /// <summary>
+        /// Stream provider name.  This setting is required.
+        /// </summary>
         public string StreamProviderName { get; private set; }
 
+        /// <summary>
+        /// CacheSizeMb setting name.
+        /// </summary>
         public const string CacheSizeMbName = "CacheSizeMb";
         private const int DefaultCacheSizeMb = 128; // default to 128mb cache.
-        public int CacheSizeMb { get; private set; }
+        /// <summary>
+        /// Cache size in megabytes.
+        /// </summary>
+        public int CacheSizeMb { get; set; }
 
+        /// <summary>
+        /// DataMinTimeInCache setting name.
+        /// </summary>
+        public const string DataMinTimeInCacheName = "DataMinTimeInCache";
+        private static readonly TimeSpan DefaultDataMinTimeInCache = TimeSpan.FromMinutes(5);
+        private TimeSpan? dataMinTimeInCache;
+        /// <summary>
+        /// Minimum time message will stay in cache before it is available for time based purge.
+        /// </summary>
+        public TimeSpan DataMinTimeInCache
+        {
+            get { return dataMinTimeInCache ?? DefaultDataMinTimeInCache; }
+            set { dataMinTimeInCache = value; }
+        }
+
+        /// <summary>
+        /// DataMaxAgeInCache setting name.
+        /// </summary>
+        public const string DataMaxAgeInCacheName = "DataMaxAgeInCache";
+        private static readonly TimeSpan DefaultDataMaxAgeInCache = TimeSpan.FromMinutes(30);
+        private TimeSpan? dataMaxAgeInCache;
+        /// <summary>
+        /// Difference in time between the newest and oldest messages in the cache.  Any messages older than this will be purged from the cache.
+        /// </summary>
+        public TimeSpan DataMaxAgeInCache
+        {
+            get { return dataMaxAgeInCache ?? DefaultDataMaxAgeInCache; }
+            set { dataMaxAgeInCache = value; }
+        }
+
+        /// <summary>
+        /// Constructor.  Requires provider name.
+        /// </summary>
+        /// <param name="streamProviderName"></param>
+        /// <param name="cacheSizeMb"></param>
         public KinesisStreamProviderConfig(string streamProviderName, int cacheSizeMb = DefaultCacheSizeMb)
         {
             StreamProviderName = streamProviderName;
             CacheSizeMb = cacheSizeMb;
         }
 
+        /// <summary>
+        /// Writes settings into a property bag.
+        /// </summary>
+        /// <param name="properties"></param>
         public void WriteProperties(Dictionary<string, string> properties)
         {
             if (KinesisSettingsType != null)
@@ -35,6 +98,10 @@ namespace Orleans.Kinesis.Providers
             properties.Add(CacheSizeMbName, CacheSizeMb.ToString(CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Read settings from provider configuration.
+        /// </summary>
+        /// <param name="providerConfiguration"></param>
         public void PopulateFromProviderConfig(IProviderConfiguration providerConfiguration)
         {
             KinesisSettingsType = providerConfiguration.GetTypeProperty(KinesisConfigTypeName, null);
@@ -46,9 +113,15 @@ namespace Orleans.Kinesis.Providers
             CacheSizeMb = providerConfiguration.GetIntProperty(CacheSizeMbName, DefaultCacheSizeMb);
         }
 
+        /// <summary>
+        /// Aquire configured IKinesisSettings class
+        /// </summary>
+        /// <param name="providerConfig"></param>
+        /// <param name="serviceProvider"></param>
+        /// <returns></returns>
         public IKinesisSettings GetKinesisSettings(IProviderConfiguration providerConfig, IServiceProvider serviceProvider)
         {
-            // if no event hub settings type is provided, use KinesisSettings and get populate settings from providerConfig
+            // if no kinesis settings type is provided, use KinesisSettings and get populate settings from providerConfig
             if (KinesisSettingsType == null)
             {
                 KinesisSettingsType = typeof(KinesisSettings);
@@ -62,14 +135,17 @@ namespace Orleans.Kinesis.Providers
 
             // if settings is an KinesisSettings class, populate settings from providerConfig
             var settings = hubSettings as KinesisSettings;
-            if (settings != null)
-            {
-                settings.PopulateFromProviderConfig(providerConfig);
-            }
+            settings?.PopulateFromProviderConfig(providerConfig);
 
             return hubSettings;
         }
 
+        /// <summary>
+        /// Aquire configured ICheckpointerSettings class
+        /// </summary>
+        /// <param name="providerConfig"></param>
+        /// <param name="serviceProvider"></param>
+        /// <returns></returns>
         public ICheckpointerSettings GetCheckpointerSettings(IProviderConfiguration providerConfig, IServiceProvider serviceProvider)
         {
             // if no checkpointer settings type is provided, use KinesisCheckpointerSettings and get populate settings from providerConfig
@@ -86,10 +162,7 @@ namespace Orleans.Kinesis.Providers
 
             // if settings is an KinesisCheckpointerSettings class, populate settings from providerConfig
             var settings = checkpointerSettings as KinesisCheckpointerSettings;
-            if (settings != null)
-            {
-                settings.PopulateFromProviderConfig(providerConfig);
-            }
+            settings?.PopulateFromProviderConfig(providerConfig);
 
             return checkpointerSettings;
         }

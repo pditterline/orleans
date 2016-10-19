@@ -8,11 +8,20 @@ using Orleans.Streams;
 
 namespace Orleans.Kinesis.Providers
 {
+    /// <summary>
+    /// Queue mapper that tracks which Kinesis shard was mapped to which queueId
+    /// </summary>
     public class KinesisQueueMapper : HashRingBasedStreamQueueMapper, IKinseisQueueMapper
     {
         private readonly Dictionary<QueueId, Shard> partitionDictionary = new Dictionary<QueueId, Shard>();
 
-        public KinesisQueueMapper(List<Shard> shards, string queueNamePrefix) : base(shards.Count, queueNamePrefix)
+        /// <summary>
+        /// Queue mapper that tracks which Kinesis shard was mapped to which queueId
+        /// </summary>
+        /// <param name="shards">List of Kinesis shards</param>
+        /// <param name="queueNamePrefix">Prefix for queueIds.  Must be unique per stream provider</param>
+        public KinesisQueueMapper(List<Shard> shards, string queueNamePrefix)
+            : base(shards.Count, queueNamePrefix)
         {
             QueueId[] queues = GetAllQueues().ToArray();
             if (queues.Length != shards.Count)
@@ -25,6 +34,11 @@ namespace Orleans.Kinesis.Providers
             }
         }
 
+        /// <summary>
+        /// Gets the Kinesis shard by QueueId
+        /// </summary>
+        /// <param name="queue"></param>
+        /// <returns></returns>
         public Shard QueueToShard(QueueId queue)
         {
             if (queue == null)

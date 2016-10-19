@@ -8,6 +8,11 @@ namespace Orleans.Kinesis.Providers
     /// </summary>
     public interface IKinseisQueueMapper : IStreamQueueMapper
     {
+        /// <summary>
+        /// Get a shard given a queue id.
+        /// </summary>
+        /// <param name="queue"></param>
+        /// <returns></returns>
         Shard QueueToShard(QueueId queue);
     }
 }

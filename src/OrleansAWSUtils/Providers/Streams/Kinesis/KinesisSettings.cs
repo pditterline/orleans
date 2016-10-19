@@ -1,13 +1,14 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Amazon.Kinesis;
 using Orleans.Providers;
-using Newtonsoft.Json;
 
 namespace Orleans.Kinesis.Providers
 {
+    /// <summary>
+    /// Kinesis settings for a specific stream.
+    /// </summary>
     [Serializable]
     public class KinesisSettings : IKinesisSettings
     {
@@ -16,8 +17,17 @@ namespace Orleans.Kinesis.Providers
         private const string StartFromNowName = "StartFromNow";
         private const bool StartFromNowDefault = true;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public KinesisSettings(){}
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="kinesisConfig"></param>
+        /// <param name="streamName"></param>
+        /// <param name="startFromNow"></param>
         public KinesisSettings(string kinesisConfig, string streamName, bool startFromNow = StartFromNowDefault)
         {
             if (string.IsNullOrWhiteSpace(kinesisConfig))
@@ -33,9 +43,22 @@ namespace Orleans.Kinesis.Providers
             StartFromNow = startFromNow;
         }
 
+        /// <summary>
+        /// Kinesis connection settings.
+        /// </summary>
         public AmazonKinesisConfig KinesisConfig { get; private set; }
+        /// <summary>
+        /// Consumer group
+        /// TODO: does this have actually have a Kinesis counterpart?
+        /// </summary>
         public string ConsumerGroup { get; private set; }
+        /// <summary>
+        /// Stream name.
+        /// </summary>
         public string StreamName { get; private set; }
+        /// <summary>
+        /// In cases where no checkpoint is found, this indicates if service should read from the most recent data, or from the begining of a partition.
+        /// </summary>
         public bool StartFromNow { get; private set; }
 
         /// <summary>

@@ -1,7 +1,8 @@
-﻿
-using System;
+﻿using System;
+using System.Numerics;
 using System.Text;
-using Microsoft.ServiceBus.Messaging;
+using Amazon.Kinesis.Model;
+using Orleans.Kinesis.Providers;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 using Orleans.ServiceBus.Providers;
@@ -11,37 +12,42 @@ namespace Tester.TestStreamProviders.Kinesis
 {
     public class StreamPerPartitionKinesisStreamProvider : PersistentStreamProvider<StreamPerPartitionKinesisStreamProvider.AdapterFactory>
     {
-        public class AdapterFactory : EventHubAdapterFactory
+        public class AdapterFactory : KinesisAdapterFactory
         {
+            private TimePurgePredicate timePurgePredicate = null;
+
             public AdapterFactory()
             {
                 CacheFactory = CreateQueueCache;
             }
 
-            private IEventHubQueueCache CreateQueueCache(string partition, IStreamQueueCheckpointer<string> checkpointer, Logger log)
+            private IKinesisQueueCache CreateQueueCache(Shard shard, IStreamQueueCheckpointer<string> checkpointer, Logger log)
             {
+                if (timePurgePredicate != null)
+                {
+                    timePurgePredicate = new TimePurgePredicate(adapterConfig.DataMinTimeInCache, adapterConfig.DataMaxAgeInCache);
+                }
                 var bufferPool = new FixedSizeObjectPool<FixedSizeBuffer>(adapterConfig.CacheSizeMb, () => new FixedSizeBuffer(1 << 20));
-                var dataAdapter = new CachedDataAdapter(partition, bufferPool);
-                return new EventHubQueueCache(checkpointer, dataAdapter, log);
+                var dataAdapter = new CachedDataAdapter(shard, bufferPool, timePurgePredicate);
+                return new KinesisQueueCache(checkpointer, dataAdapter, log);
             }
         }
 
-        private class CachedDataAdapter : EventHubDataAdapter
+        private class CachedDataAdapter : KinesisDataAdapter
         {
             private readonly Guid partitionStreamGuid;
 
-            public CachedDataAdapter(string partitionKey, IObjectPool<FixedSizeBuffer> bufferPool)
-                : base(bufferPool)
+            public CachedDataAdapter(Shard shard, IObjectPool<FixedSizeBuffer> bufferPool, TimePurgePredicate timePurge)
+                : base(shard.ShardId, bufferPool, timePurge)
             {
-                partitionStreamGuid = GetPartitionGuid(partitionKey);
+                partitionStreamGuid = GetPartitionGuid(_shardId);
             }
 
-
-            public override StreamPosition GetStreamPosition(EventData queueMessage)
+            public override StreamPosition GetStreamPosition(Record queueMessage)
             {
-                IStreamIdentity stremIdentity = new StreamIdentity(partitionStreamGuid, null);
-                StreamSequenceToken token = new EventSequenceToken(queueMessage.SequenceNumber, 0);
-                return new StreamPosition(stremIdentity, token);
+                IStreamIdentity streamIdentity = new StreamIdentity(partitionStreamGuid, null);
+                StreamSequenceToken token = new KinesisStreamSequenceToken(_shardId, BigInteger.Parse(queueMessage.SequenceNumber));
+                return new StreamPosition(streamIdentity, token);
             }
         }
 
